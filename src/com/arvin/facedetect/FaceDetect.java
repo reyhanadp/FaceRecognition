@@ -5,24 +5,23 @@
  */
 package com.arvin.facedetect;
 
-import java.awt.Color;
-import java.awt.Desktop;
+import com.sun.speech.freetts.Voice;
+import com.sun.speech.freetts.VoiceManager;
 import static java.awt.Frame.NORMAL;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.event.WindowAdapter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import java.util.Timer;
 import javax.swing.JOptionPane;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -36,11 +35,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.videoio.VideoCapture;
 
-/**
- *
- * @author Arvind Mahto
- * @Email mahto.arvin@gmail.com
- */
 public class FaceDetect extends javax.swing.JFrame {
 
     private thread thread = null;
@@ -51,18 +45,20 @@ public class FaceDetect extends javax.swing.JFrame {
     MatOfByte mob = new MatOfByte();
     String fileExten = ".png";
     CascadeClassifier faceDetect = new CascadeClassifier("haarcascade_frontalface_alt.xml");
-    CascadeClassifier eyeDetect = new CascadeClassifier("haarcascade_eye.xml");
-    int indeks = 0;
-    int ketemu = 1;
-    String nama;
-
+    int status = 1;
+    int banyak_wajah = -1;
+//    int indeks = 0;
+//    int ketemu = 1;
+//    int suara = 0;
+//    int ulang = 1;
+//    String nama;
     // VideoCapture cap;
     // public BufferedImage buff;
     Mat matrix = new Mat();
     Mat cropImage = new Mat();
 
     class thread implements Runnable {
-        
+
         protected volatile boolean runnable = true;
 
         @Override
@@ -79,7 +75,6 @@ public class FaceDetect extends javax.swing.JFrame {
                         cap.retrieve(matrix);
                         Graphics g = jPanel1.getGraphics();
                         faceDetect.detectMultiScale(matrix, faces);
-                        eyeDetect.detectMultiScale(matrix, eyes);
 //                        System.out.println(String.format("Total faces Detected: %d", faces.toArray().length));
                         String text = String.format("Total wajah terdeteksi : %d", faces.toArray().length);
 
@@ -90,24 +85,24 @@ public class FaceDetect extends javax.swing.JFrame {
 //                         ), Core.FONT_HERSHEY_COMPLEX_SMALL, 0.5, new Scalar(0, 255, 0));
                         for (Rect rect : faces.toArray()) {
                             //simpan gambar
-                            if (indeks == 1) {
-
-                                while (ketemu == 1) {
-                                    File file = new File(path + "/dataWajah/" + nama + "_"+ indeks + ".jpg");
-                                    Desktop desktop = Desktop.getDesktop();
-                                    if (!file.exists()) {
-                                        ketemu = 0;
-                                    }else{
-                                        indeks = indeks +1;
-                                    }
-                                }
-
-                                rect_Crop = new Rect(rect.x, rect.y, rect.width, rect.height);
-                                Mat image_roi = new Mat(matrix, rect_Crop);
-                                Imgcodecs.imwrite(path + "/dataWajah/" + nama + "_"+ indeks + ".jpg", image_roi);
-                                JOptionPane.showMessageDialog(null, "Data wajah anda telah disimpan di dalam folder :"+path + "/dataWajah/" + nama + "_"+ indeks + ".jpg");
-                                indeks = 0;
-                            }
+//                            if (indeks == 1) {
+//
+//                                while (ketemu == 1) {
+//                                    File file = new File(path + "/dataWajah/" + nama + "_"+ indeks + ".jpg");
+//                                    Desktop desktop = Desktop.getDesktop();
+//                                    if (!file.exists()) {
+//                                        ketemu = 0;
+//                                    }else{
+//                                        indeks = indeks +1;
+//                                    }
+//                                }
+//
+//                                rect_Crop = new Rect(rect.x, rect.y, rect.width, rect.height);
+//                                Mat image_roi = new Mat(matrix, rect_Crop);
+//                                Imgcodecs.imwrite(path + "/dataWajah/" + nama + "_"+ indeks + ".jpg", image_roi);
+//                                JOptionPane.showMessageDialog(null, "Data wajah anda telah disimpan di dalam folder :"+path + "/dataWajah/" + nama + "_"+ indeks + ".jpg");
+//                                indeks = 0;
+//                            }
 
                             Imgproc.rectangle(matrix,
                                     new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height),
@@ -122,67 +117,19 @@ public class FaceDetect extends javax.swing.JFrame {
                             String plus_minus = "\u00B1";
                             Imgproc.putText(matrix, String.format("%d kaki jarak dari kamera", (350 / ((rect.height)))), new Point(rect.x, rect.y + rect.height + 40
                             ), NORMAL, 0.5, new Scalar(0, 255, 0));
-                            
-                            
-                            
+
                         }
 
-//                        Mat image_roi = new Mat(matrix,rect_Crop);
-//                        Imgcodecs.imwrite(path+"/reyhan.jpg",image_roi);
-//                          works but not good!
-//                            BufferedImage out; 
-//                            byte[] data = new byte[320*240 * (int)matrix.elemSize()];
-//                            int type;
-//                            matrix.get(0, 0,data);
-//                            
-//                            if(matrix.channels() == 1){
-//                                type = BufferedImage.TYPE_BYTE_GRAY;
-//                            }
-//                            else{
-//                                type = BufferedImage.TYPE_3BYTE_BGR;
-//                            }
-//                            out = new BufferedImage(320,240,type);
-//                            
-//                            out.getRaster().setDataElements(0,0,320,240,data);
-// BufferedImage buff = null ;
-//                        if(matrix!=null){
-//                            int cols = matrix.cols();
-//                            int rows = matrix.rows();
-//                            int elemSize = (int) matrix.elemSize();
-//                            byte[] data = new byte[cols*rows*elemSize];
-//                            int type = 0;
-//                            matrix.get(0,0,data);
-//                            switch(matrix.channels()){
-//                                case 1:
-//                                    type = BufferedImage.TYPE_BYTE_GRAY;
-//                                    break;
-//                                case 3:
-//                                    type = BufferedImage.TYPE_3BYTE_BGR;
-//                                    //bgr to rgb
-//                                    byte b;
-//                                    for(int i = 0;i<data.length;i+=3)
-//                                    {
-//                                        b= data[i];
-//                                        data[i]=data[i+2];
-//                                        data[i+2]=b;
-//                                    }
-//                                    break;
-//                                default:
-//                                    ;
-//                            }
-//                            
-//                            //Reuse 
-//                            
-//                            if(buff==null || buff.getWidth()!=cols || buff.getHeight()!=rows || buff.getType()!=type){
-//                                buff = new BufferedImage(cols,rows,type);
-//                            }
-//                            buff.getRaster().setDataElements(0, 0, data);
-//                                
-//                        }
-//                        else{
-//                            buff = null;
-//                          
-//                        }
+                        if (banyak_wajah != faces.toArray().length) {
+                            if (faces.toArray().length == 0) {
+                                timer = new Timer();
+                                timer.schedule(new tampilkanWaktuMundur(), 0, 1000);
+                            } else if (faces.toArray().length > 0) {
+                                timer.cancel();
+                            }
+                            banyak_wajah = faces.toArray().length;
+                        }
+
                         Imgcodecs.imencode(fileExten, matrix, mob);
                         byte[] byteArray = mob.toArray();
                         BufferedImage buff = null;
@@ -203,11 +150,37 @@ public class FaceDetect extends javax.swing.JFrame {
 
     }
 
+    class tampilkanWaktuMundur extends TimerTask {
+
+        int menit = Integer.parseInt(fieldWaktu.getText());
+        int detik = menit * 1;
+
+        @Override
+        public void run() {
+            if (detik > 0) {
+//                fieldWaktu.setText(String.valueOf(detik));
+                detik--;
+            } else {
+                timer.cancel();
+                stop();
+                start.setText("Start");
+                Runtime runtime = Runtime.getRuntime();
+                try {
+                    Process proc = runtime.exec("rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
+//                fieldWaktu.setText("Waktu Habis");
+                } catch (IOException ex) {
+                    Logger.getLogger(FaceDetect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+
+    }
+
     /**
      * Creates new form NewJFrame
      */
     public FaceDetect() {
-        
+
         initComponents();
         setLocationRelativeTo(this);
     }
@@ -222,8 +195,7 @@ public class FaceDetect extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        fieldNama = new javax.swing.JTextField();
-        simpan = new javax.swing.JButton();
+        fieldWaktu = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         start = new javax.swing.JButton();
 
@@ -242,17 +214,10 @@ public class FaceDetect extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 458, Short.MAX_VALUE)
+            .addGap(0, 487, Short.MAX_VALUE)
         );
 
-        simpan.setText("Simpan");
-        simpan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                simpanActionPerformed(evt);
-            }
-        });
-
-        jLabel1.setText("Nama");
+        jLabel1.setText("Waktu (menit)");
 
         start.setText("Start");
         start.addActionListener(new java.awt.event.ActionListener() {
@@ -267,58 +232,61 @@ public class FaceDetect extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addGap(230, 230, 230)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(196, 196, 196)
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(fieldNama, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(fieldWaktu, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(simpan)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(start, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(275, 275, 275))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(start)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(fieldNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(fieldWaktu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
-                    .addComponent(simpan)))
+                    .addComponent(start)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void simpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_simpanActionPerformed
-        // TODO add your handling code here:
-        this.indeks = 1;
-        this.nama = fieldNama.getText();
-        this.ketemu = 1;
-    }//GEN-LAST:event_simpanActionPerformed
-
+    Timer timer;
     private void startActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startActionPerformed
         // TODO add your handling code here:
-        if(start.getText().compareTo("Start")==0){
-            start();
-            start.setText("Stop");
-            simpan.setEnabled(true);
-        }else{
-            stop();
-            simpan.setEnabled(false);
-            start.setText("Start");
+        if (fieldWaktu.getText().compareTo("") == 0) {
+            JOptionPane.showMessageDialog(this, "Silahkan isi timer terlebih dahulu!");
+        } else {
+            VoiceManager vm = VoiceManager.getInstance();
+            Voice voice = vm.getVoice("kevin16");
+            voice.allocate();
+//
+//        
+            if (start.getText().compareTo("Start") == 0) {
+                start();
+                start.setText("Stop");
+                fieldWaktu.setEditable(false);
+                voice.speak("Face Detection Start");
+//            timer = new Timer();
+//            timer.schedule(new tampilkanWaktuMundur(), 0, 1000);
+            } else {
+                fieldWaktu.setEditable(true);
+                stop();
+                start.setText("Start");
+                voice.speak("Face Detection Stop");
+//            timer.cancel(); 
+            }
         }
-        
+
+
     }//GEN-LAST:event_startActionPerformed
-    
+
     private void start() {
 
-        cap = new VideoCapture(0);
+        cap = new VideoCapture(1);
         thread = new thread();
         Thread t = new Thread(thread);
         t.setDaemon(true);
@@ -326,12 +294,12 @@ public class FaceDetect extends javax.swing.JFrame {
         t.start();
 
     }
-    
+
     private void stop() {
 
         thread.runnable = false;
         cap.release();
-        
+
     }
 
     /**
@@ -385,10 +353,9 @@ public class FaceDetect extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField fieldNama;
+    private javax.swing.JTextField fieldWaktu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JButton simpan;
     private javax.swing.JButton start;
     // End of variables declaration//GEN-END:variables
 }
